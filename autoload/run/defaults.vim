@@ -1,98 +1,103 @@
 " Helper Functions
 function! run#defaults#fullfilepath() abort
-    " /Users/sloth/documents/example.vim
-    return fnameescape(expand('%:p'))
+  " /Users/sloth/documents/example.vim
+  return fnameescape(expand('%:p'))
+endfunction
+
+function! run#defaults#dirname() abort
+  " /Users/sloth/documents
+  return fnameescape(expand('%:p:h'))
 endfunction
 
 function! run#defaults#basefilename() abort
-    " example
-    return shellescape(expand('%:r'))
+  " example
+  return shellescape(expand('%:r'))
 endfunction
 
 function! run#defaults#fullfilename() abort
-    " example.vim
-    return shellescape(expand('%'))
+  " example.vim
+  return shellescape(expand('%'))
 endfunction
 
 
 " Defaults
 function! run#defaults#javascript() abort
-    return ['node']
+  return ['node']
 endfunction
 
 function! run#defaults#python() abort
-    return ['python']
+  return ['python']
 endfunction
 
 function! run#defaults#applescript() abort
-    return ['osascript']
+  return ['osascript']
 endfunction
 
 function! run#defaults#erlang() abort
-    return ['escript']
+  return ['escript']
 endfunction
 
 function! run#defaults#go() abort
-    return ['go run']
+  return ['go run']
 endfunction
 
 function! run#defaults#java() abort
-    return [
-                \ 'javac',
-                \ '-g:none',
-                \ run#defaults#fullfilepath(),
-                \ '&&',
-                \ 'java',
-                \ run#defaults#basefilename()
-                \ ]
+  return [
+        \ 'javac',
+        \ '-g:none',
+        \ run#defaults#fullfilepath(),
+        \ '&&',
+        \ 'java',
+        \ run#defaults#basefilename()
+        \ ]
 endfunction
 
 function! run#defaults#lua() abort
-    return ['lua']
+  return ['lua']
 endfunction
 
 function! run#defaults#perl() abort
-    return ['perl']
+  return ['perl']
 endfunction
 
 function! run#defaults#php() abort
-    return ['php']
+  return ['php']
 endfunction
 
 function! run#defaults#ruby() abort
-    return ['ruby']
+  return ['ruby']
 endfunction
 
 function! run#defaults#sh() abort
-    return ['sh']
+  return ['sh']
 endfunction
 
 function! run#defaults#idris() abort
-    return ['idris']
+  return ['idris']
 endfunction
 
 function! run#defaults#ghci() abort
-    return ['ghci']
+  return ['ghci']
 endfunction
 
 function! run#defaults#coffee() abort
-    return ['coffee']
+  return ['coffee']
 endfunction
 
 function! run#defaults#typescript() abort
-    return [
-                \ 'tsc',
-                \ run#defaults#fullfilepath(),
-                \ '&&',
-                \ 'node',
-                \ run#defaults#basefilename() . '.js'
-                \ ]
+  return [
+        \ 'tsc',
+        \ run#defaults#fullfilepath(),
+        \ '&&',
+        \ 'node',
+        \ run#defaults#basefilename() . '.js'
+        \ ]
 endfunction
 
 function! run#defaults#elixir() abort
-    return ['elixir']
+  return ['elixir']
 endfunction
 
 function! run#defaults#moon() abort
-    return ['moon']
+  return ['moon']
 endfunction

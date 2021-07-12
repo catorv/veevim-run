@@ -36,7 +36,7 @@ function! run#Run(...) abort
   return l:id
 endfunction
 
-function! s:find_job_by_cmd(cmd) abort
+function! s:find_job(cmd) abort
   if empty(s:jobs)
     return ''
   endif
@@ -57,23 +57,26 @@ function! s:split() abort
     let l:direction = 'down'
   endif
   if exists('g:run_split_lines')
-
-    let l:directions = {
-          \ 'up':    'topleft split',
-          \ 'down':  'botright split',
-          \ 'right': 'botright vsplit',
-          \ 'left':  'topleft vsplit',
-          \ }
-
-    if has_key(l:directions, l:direction)
-      execute l:directions[l:direction] . ' Run'
-    endif
-
-    setlocal nobuflisted
-    setlocal bufhidden=wipe
-    setlocal noswapfile
-    set filetype=Run
+    let l:lines = g:run_split_lines
+  else
+    let l:lines = 10
   endif
+
+  let l:directions = {
+        \ 'up':    'topleft ' . l:lines . 'split',
+        \ 'down':  'botright ' . l:lines . 'split',
+        \ 'right': 'botright ' . l:lines . 'vsplit',
+        \ 'left':  'topleft ' . l:lines . 'vsplit',
+        \ }
+
+  if has_key(l:directions, l:direction)
+    execute l:directions[l:direction] . ' Run'
+  endif
+
+  setlocal nobuflisted
+  setlocal bufhidden=wipe
+  setlocal noswapfile
+  set filetype=Run
 endfunction
 
 function! s:on_stdout(job_id, data, ...) abort

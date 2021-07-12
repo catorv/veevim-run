@@ -11,7 +11,7 @@ _Requires [Neovim](https://neovim.io)_
 [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```viml
-Plug 'sbdchd/vim-run'
+Plug 'catorv/veevim-run'
 ```
 
 ## Usage

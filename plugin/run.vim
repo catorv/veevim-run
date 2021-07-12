@@ -1,2 +1,2 @@
-command! -nargs=* Run call run#Run(<q-args>)
-command! RunKillAll call run#KillAll()
+command! -nargs=* Run call run#run(<q-args>)
+command! RunKillAll call run#killAll()

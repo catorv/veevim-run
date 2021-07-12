@@ -1,6 +1,6 @@
 let s:jobs = {}
 
-function! run#Run(...) abort
+function! run#run(...) abort
   if !has('nvim')
     echom 'vim-run: neovim is currently required for this plugin'
     return
@@ -14,41 +14,89 @@ function! run#Run(...) abort
 
   let l:last_winid = win_getid()
 
+  let l:job = s:find_job(l:cmd)
+  if !empty(l:job)
+    let l:id = s:rerun(l:job)
+
+    if l:id !=# ''
+      call win_gotoid(l:last_winid)
+      return l:id
+    endif
+  endif
+
   call s:split()
 
   let l:job = {
-        \ 'stderr' : [],
-        \ 'stdout' : [],
+        \ 'cmd': l:cmd,
+        \ 'bufnr': bufnr(),
+        \ 'done': v:false,
+        \
+        \ 'stderr': [],
+        \ 'stdout': [],
+        \
         \ 'on_stdout': function('s:on_stdout'),
         \ 'on_stderr': function('s:on_stderr'),
-        \ 'on_exit' : function('s:on_exit'),
+        \ 'on_exit': function('s:on_exit'),
         \ }
 
   let l:id = termopen(l:cmd, l:job)
 
   let l:job.id = l:id
-  let l:job.bufnr = bufnr()
-  let l:job.cmd = l:cmd
-
   let s:jobs[l:id] = l:job
 
   call win_gotoid(l:last_winid)
   return l:id
 endfunction
 
+
 function! s:find_job(cmd) abort
   if empty(s:jobs)
-    return ''
+    return {}
   endif
 
-  for l:id in keys(s:jobs)
-    let l:job = s:jobs[l:id]
+  for [l:id, l:job] in items(s:jobs)
+    if !bufexists(l:job.bufnr)
+      unlet s:jobs[l:id]
+      continue
+    endif
     if l:job.cmd ==# a:cmd
       return l:job
     endif
   endfor
-  return ''
+
+  return {}
 endfunction
+
+
+function! s:rerun(job) abort
+  unlet s:jobs[a:job.id]
+
+  if !a:job.done
+    silent! call jobstop(a.job.id)
+  endif
+
+  let l:buf = getbufinfo(a:job.bufnr)
+  if !empty(l:buf) && !empty(l:buf[0].windows)
+    call win_gotoid(l:buf[0].windows[0])
+    enew
+    call s:buf_init()
+    execute 'silent! bdelete! ' . a:job.bufnr
+  else
+    call s:split()
+  endif
+
+  let l:id = termopen(a:job.cmd, a:job)
+
+  let a:job.id = l:id
+  let a:job.bufnr = bufnr()
+  let a:job.done = v:false
+  let a:job.stderr = []
+  let a:job.stdout = []
+
+  let s:jobs[l:id] = a:job
+  return l:id
+endfunction
+
 
 function! s:split() abort
   if exists('g:run_split')
@@ -73,11 +121,17 @@ function! s:split() abort
     execute l:directions[l:direction] . ' Run'
   endif
 
+  call s:buf_init()
+endfunction
+
+
+function! s:buf_init() abort
   setlocal nobuflisted
   setlocal bufhidden=wipe
   setlocal noswapfile
   set filetype=Run
 endfunction
+
 
 function! s:on_stdout(job_id, data, ...) abort
   if !has_key(s:jobs, a:job_id)
@@ -88,6 +142,7 @@ function! s:on_stdout(job_id, data, ...) abort
   call extend(l:job.stdout, a:data)
 endfunction
 
+
 function! s:on_stderr(job_id, data, ...) abort
   if !has_key(s:jobs, a:job_id)
     return
@@ -96,6 +151,7 @@ function! s:on_stderr(job_id, data, ...) abort
 
   call extend(l:job.stderr, a:data)
 endfunction
+
 
 function! s:on_exit(job_id, data, ...) abort
   if !has_key(s:jobs, a:job_id)
@@ -107,10 +163,12 @@ function! s:on_exit(job_id, data, ...) abort
   if g:run_auto_close == 1 && bufnr('') == bufnr('%')
     close
   endif
-  unlet s:jobs[a:job_id]
+  let s:jobs[a:job_id].done = v:true
+  " unlet s:jobs[a:job_id]
 endfunction
 
-function! run#KillAll() abort
+
+function! run#killAll() abort
   if empty(s:jobs)
     return
   endif
@@ -121,5 +179,16 @@ function! run#KillAll() abort
     endif
   endfor
 
-  let s:jobs = {}
+  " let s:jobs = {}
+endfunction
+
+
+function! run#list() abort
+  for [l:id, l:job] in items(s:jobs)
+    if l:job.done && !bufexists(l:job.bufnr)
+      unlet s:jobs[l:id]
+      continue
+    endif
+    echo '[id=' . l:id . ' bufnr=' . l:job.bufnr . '] ' . l:job.cmd
+  endfor
 endfunction
